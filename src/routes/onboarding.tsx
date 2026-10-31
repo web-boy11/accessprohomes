@@ -172,7 +172,9 @@ function Onboarding() {
                     setStep(1)
                   } else if (step === 1) {
                     if (!data.ssn.trim()) {
-                      setError('Please enter your Social Security Number (SSN).')
+                      setError(
+                        `Please enter your ${regions[regional.region].idLabel}.`,
+                      )
                       return
                     }
                     if (!file) {
@@ -345,16 +347,16 @@ function Onboarding() {
                       </span>
                     </label>
                     <label>
-                      Social Security Number (SSN)
+                      {regions[regional.region].idLabel}
                       <span className="field-note">
-                        Required for professional identity review
+                        {regions[regional.region].idDescription}
                       </span>
                       <input
                         required
                         maxLength={30}
                         value={data.ssn}
                         onChange={(e) => update('ssn', e.target.value)}
-                        placeholder="e.g. 123-45-6789"
+                        placeholder={regions[regional.region].idPlaceholder}
                       />
                     </label>
                     <label className="upload-zone">
@@ -411,7 +413,7 @@ function Onboarding() {
                         ['Email', data.email],
                         ['Country', regions[regional.region].name],
                         ['Profession', data.profession],
-                        ['SSN', data.ssn],
+                        [regions[regional.region].idLabel, data.ssn],
                         ['Document', file?.name || ''],
                         [
                           'Requested access',

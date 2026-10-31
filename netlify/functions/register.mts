@@ -92,11 +92,19 @@ export default async function (req: Request) {
           400,
         )
 
-      if (!ssn)
+      if (!ssn) {
+        const idName =
+          ({
+            US: 'Social Security Number (SSN)',
+            CA: 'Social Insurance Number (SIN)',
+            GB: 'National Insurance (NI) Number',
+            AU: 'Tax File Number (TFN) / ABN',
+          } as Record<string, string>)[region] || 'identity number'
         return answer(
-          { error: 'Please enter your Social Security Number (SSN).' },
+          { error: `Please enter your ${idName}.` },
           400,
         )
+      }
 
       if (
         access === 'temporary' &&

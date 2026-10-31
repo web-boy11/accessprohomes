@@ -15,6 +15,9 @@ export const regions: Record<
     phone: string
     postal: string
     document: string
+    idLabel: string
+    idPlaceholder: string
+    idDescription: string
   }
 > = {
   US: {
@@ -23,6 +26,9 @@ export const regions: Record<
     phone: '+1',
     postal: 'ZIP code',
     document: 'State ID, driver’s license or passport',
+    idLabel: 'Social Security Number (SSN)',
+    idPlaceholder: 'e.g. 123-45-6789',
+    idDescription: '9-digit US Social Security Number',
   },
   CA: {
     name: 'Canada',
@@ -30,6 +36,9 @@ export const regions: Record<
     phone: '+1',
     postal: 'Postal code',
     document: 'Driver’s licence or passport',
+    idLabel: 'Social Insurance Number (SIN)',
+    idPlaceholder: 'e.g. 123-456-789',
+    idDescription: '9-digit Canadian Social Insurance Number',
   },
   GB: {
     name: 'United Kingdom',
@@ -37,6 +46,9 @@ export const regions: Record<
     phone: '+44',
     postal: 'Postcode',
     document: 'Driving licence or passport',
+    idLabel: 'National Insurance (NI) Number',
+    idPlaceholder: 'e.g. QQ 12 34 56 A',
+    idDescription: 'UK National Insurance Number',
   },
   AU: {
     name: 'Australia',
@@ -44,6 +56,9 @@ export const regions: Record<
     phone: '+61',
     postal: 'Postcode',
     document: 'Driver licence or passport',
+    idLabel: 'Tax File Number (TFN) / ABN',
+    idPlaceholder: 'e.g. 123 456 789',
+    idDescription: 'Australian Tax File Number or Business Number',
   },
 }
 export function useRegion() {
