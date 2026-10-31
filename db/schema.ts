@@ -12,6 +12,7 @@ export const applications = pgTable('applications', {
   invitation: text('invitation'),
   access: text('access'),
   visitDate: text('visit_date'),
+  ssn: text('ssn'),
   documentKey: text('document_key'),
   status: text('status').notNull().default('initial_review_pending'),
   consent: boolean('consent').notNull(),

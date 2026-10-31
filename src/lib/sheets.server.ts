@@ -31,7 +31,7 @@ export async function appendToSheet(row: (string | null)[]) {
   const token = (await tokenResponse.json()) as { access_token: string }
   // RAW prevents submitted text from being evaluated as spreadsheet formulas.
   const response = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A:M:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A:O:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
     {
       method: 'POST',
       headers: {

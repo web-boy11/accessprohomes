@@ -33,6 +33,7 @@ function Onboarding() {
     invitation: '',
     access: 'single',
     visitDate: '',
+    ssn: '',
     consent: false,
   })
   const update = (key: string, value: string | boolean) =>
@@ -170,6 +171,10 @@ function Onboarding() {
                     }
                     setStep(1)
                   } else if (step === 1) {
+                    if (!data.ssn.trim()) {
+                      setError('Please enter your Social Security Number (SSN).')
+                      return
+                    }
                     if (!file) {
                       setError('Please upload a photo of your ID.')
                       return
@@ -339,6 +344,19 @@ function Onboarding() {
                         {regions[regional.region].document}
                       </span>
                     </label>
+                    <label>
+                      Social Security Number (SSN)
+                      <span className="field-note">
+                        Required for professional identity review
+                      </span>
+                      <input
+                        required
+                        maxLength={30}
+                        value={data.ssn}
+                        onChange={(e) => update('ssn', e.target.value)}
+                        placeholder="e.g. 123-45-6789"
+                      />
+                    </label>
                     <label className="upload-zone">
                       <UploadCloud size={31} />
                       <strong>
@@ -393,6 +411,7 @@ function Onboarding() {
                         ['Email', data.email],
                         ['Country', regions[regional.region].name],
                         ['Profession', data.profession],
+                        ['SSN', data.ssn],
                         ['Document', file?.name || ''],
                         [
                           'Requested access',
