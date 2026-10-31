@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AccessPro private identity documents
+Parameters:
+  RetentionDays:
+    Type: Number
+    Default: 90
+    MinValue: 1
+    Description: Confirm regional retention requirements before provisioning.
+Resources:
+  DocumentKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+  Documents:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !GetAtt DocumentKey.Arn
+            BucketKeyEnabled: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpirePrivateDocuments
+            Status: Enabled
+            ExpirationInDays: !Ref RetentionDays
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+  DocumentsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Documents
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RequireTLS
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt Documents.Arn
+              - !Sub '${Documents.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': false
+          - Sid: RequireKMSEncryption
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:PutObject'
+            Resource: !Sub '${Documents.Arn}/*'
+            Condition:
+              StringNotEqualsIfExists:
+                's3:x-amz-server-side-encryption': 'aws:kms'
+          - Sid: RequireDocumentKey
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:PutObject'
+            Resource: !Sub '${Documents.Arn}/*'
+            Condition:
+              StringNotEqualsIfExists:
+                's3:x-amz-server-side-encryption-aws-kms-key-id': !GetAtt DocumentKey.Arn
+  DocumentUploaderPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Attach to an approved uploader role. Does not grant document downloads or ACL changes.
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: 's3:PutObject'
+            Resource: !Sub '${Documents.Arn}/documents/*'
+          - Effect: Allow
+            Action:
+              - 'kms:GenerateDataKey'
+              - 'kms:Decrypt'
+            Resource: !GetAtt DocumentKey.Arn
+            Condition:
+              StringEquals:
+                'kms:ViaService': !Sub 's3.${AWS::Region}.amazonaws.com'
+Outputs:
+  DocumentBucketName:
+    Value: !Ref Documents
+  EncryptionKeyArn:
+    Value: !GetAtt DocumentKey.Arn
+  UploaderPolicyArn:
+    Value: !Ref DocumentUploaderPolicy
