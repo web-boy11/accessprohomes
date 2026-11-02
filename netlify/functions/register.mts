@@ -5,7 +5,7 @@ import { getStore } from '@netlify/blobs'
 import { eq, sql } from 'drizzle-orm'
 import { database } from '../../db/index.js'
 import { applications, submissionLimits } from '../../db/schema.js'
-import { appendToSheet } from '../../src/lib/sheets.server.js'
+import { appendToSheet, uploadFileToDrive } from '../../src/lib/sheets.server.js'
 
 function answer(body: unknown, status = 200) {
   return Response.json(body, {
@@ -30,6 +30,7 @@ export default async function (req: Request) {
     )
 
   let documentKey: string | undefined
+  let driveLink: string | null = null
   let saved = false
 
   try {
@@ -152,19 +153,21 @@ export default async function (req: Request) {
           400,
         )
 
-      // Storage: Try Netlify Blobs; if offline or unconfigured, store in local uploads folder
+      const fileBuffer = Buffer.from(bytes)
+      const cleanName = name.replace(/[^a-zA-Z0-9]/g, '_')
+      const fileName = `${cleanName}_ID_${randomUUID().slice(0, 8)}.${png ? 'png' : 'jpg'}`
+
+      // 1. Save locally as reliable backup
+      const uploadDir = path.resolve(process.cwd(), 'uploads', id)
+      await fs.mkdir(uploadDir, { recursive: true })
+      await fs.writeFile(path.join(uploadDir, fileName), fileBuffer)
+      documentKey = `uploads/${id}/${fileName}`
+
+      // 2. Upload to Google Drive if Drive storage is configured
       try {
-        documentKey = `documents/${id}/${randomUUID()}.${png ? 'png' : 'jpg'}`
-        await getStore('private-identity-documents').set(
-          documentKey,
-          bytes.buffer,
-        )
+        driveLink = await uploadFileToDrive(fileBuffer, fileName, file.type)
       } catch {
-        const uploadDir = path.resolve(process.cwd(), 'uploads', id)
-        await fs.mkdir(uploadDir, { recursive: true })
-        const fileName = `${randomUUID()}.${png ? 'png' : 'jpg'}`
-        await fs.writeFile(path.join(uploadDir, fileName), Buffer.from(bytes))
-        documentKey = `local://${id}/${fileName}`
+        /* Fall back to local key */
       }
     }
 
@@ -216,7 +219,7 @@ export default async function (req: Request) {
           access: professional ? access : null,
           visitDate: visitDate || null,
           ssn: professional ? ssn : null,
-          documentKey,
+          documentKey: driveLink || documentKey,
           status: record.status,
         })
         .returning()
@@ -243,10 +246,11 @@ export default async function (req: Request) {
         profession || null,
         record.company,
         postal || null,
-        ssn || null,
-        access || null,
-        visitDate || null,
-        record.status,
+        ssn || null, // Column K: SSN / National ID
+        driveLink || documentKey || null, // Column L: ID Card Document (Google Drive Link / Upload)
+        access || null, // Column M: Requested Access
+        visitDate || null, // Column N: Visit Date
+        record.status, // Column O: Status
       ])
     } catch {
       /* Pending sync is recorded; never discard accepted application */
@@ -273,13 +277,6 @@ export default async function (req: Request) {
       201,
     )
   } catch {
-    if (documentKey && !saved) {
-      try {
-        await getStore('private-identity-documents').delete(documentKey)
-      } catch {
-        /* Reconcile orphan upload */
-      }
-    }
     return answer(
       {
         error:
