@@ -15,7 +15,8 @@ function localDevFunctions(): Plugin {
             const chunks: Buffer[] = []
             for await (const chunk of req) chunks.push(chunk)
             const body = Buffer.concat(chunks)
-            const fullUrl = `http://${req.headers.host || 'localhost:3000'}${req.url}`
+            const proto = (req.headers['x-forwarded-proto'] as string) || 'http'
+            const fullUrl = `${proto}://${req.headers.host || 'localhost:3000'}${req.url}`
             const webReq = new Request(fullUrl, {
               method: req.method,
               headers: req.headers as HeadersInit,
@@ -40,6 +41,9 @@ function localDevFunctions(): Plugin {
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  server: {
+    allowedHosts: true,
+  },
   plugins: [
     tailwindcss(),
     localDevFunctions(),
