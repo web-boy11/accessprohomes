@@ -96,6 +96,14 @@ export default {
       }
     }
 
+    // Handle image CDN requests by forwarding directly to static asset
+    if (url.pathname.startsWith('/.netlify/images') && env.ASSETS) {
+      const imgParam = url.searchParams.get('url');
+      if (imgParam) {
+        return env.ASSETS.fetch(new Request(new URL(imgParam, request.url), request));
+      }
+    }
+
     // Serve static assets first (CSS, JS, images, favicons)
     if (env.ASSETS) {
       const assetRes = await env.ASSETS.fetch(request);

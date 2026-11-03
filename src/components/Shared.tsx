@@ -86,8 +86,8 @@ export function useRegion() {
   }
   return { region, setRegion: choose, language, setLanguage }
 }
-export function image(file: string, width: number) {
-  return `/.netlify/images?url=/img/${file}&w=${width}&fm=webp&q=85`
+export function image(file: string, _width?: number) {
+  return `/img/${file}`
 }
 export function Header({
   regional,
