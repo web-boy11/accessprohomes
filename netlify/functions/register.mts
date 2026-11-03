@@ -20,8 +20,8 @@ function answer(body: unknown, status = 200) {
 export default async function (req: Request) {
   if (req.method !== 'POST') return answer({ error: 'Method not allowed' }, 405)
   const host = req.headers.get('host') || ''
-  const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('onrender.com')
-  if (!isLocal && req.headers.get('origin') !== new URL(req.url).origin)
+  const isTrustedHost = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('onrender.com') || host.includes('.lhr.life') || host.includes('cloudflare')
+  if (!isTrustedHost && req.headers.get('origin') && req.headers.get('origin') !== new URL(req.url).origin)
     return answer({ error: 'Please submit from the AccessPro website.' }, 403)
   if (Number(req.headers.get('content-length') || 0) > 5 * 1024 * 1024)
     return answer(
