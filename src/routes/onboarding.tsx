@@ -121,6 +121,27 @@ function Onboarding() {
                   sent yet.
                 </span>
               </div>
+
+              <div className="facial-expectation-round">
+                <div className="facial-scan-avatar">
+                  <img
+                    src="/img/facial-scan.jpg"
+                    alt="Facial recognition verification scan preview"
+                  />
+                  <div className="facial-scan-badge">
+                    <ShieldCheck size={14} />
+                  </div>
+                </div>
+                <div className="facial-scan-text">
+                  <div className="eyebrow">WHAT TO EXPECT WHEN YOUR LINK ARRIVES</div>
+                  <h3>Quick, private facial recognition</h3>
+                  <p>
+                    When you receive your verification email, open the link on your smartphone or camera device.
+                    You’ll simply glance into the camera for a quick 30-second face scan to verify that your face matches your uploaded ID.
+                  </p>
+                </div>
+              </div>
+
               <p>
                 Facial verification and homeowner approval are required before
                 any building access can be issued. Keep an eye on your inbox for
@@ -489,7 +510,7 @@ function Onboarding() {
                     {busy
                       ? 'Securely submitting…'
                       : step === 2
-                        ? 'Submit my introduction'
+                        ? 'Submit'
                         : 'Continue'}
                     {step === 2 ? (
                       <Check size={16} />

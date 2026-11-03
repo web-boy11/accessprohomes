@@ -1287,6 +1287,79 @@ input::placeholder {
   color: var(--muted);
   margin: 14px 0;
 }
+
+
+.facial-expectation-round {
+  margin: 22px 0 20px;
+  background: #f4f6ef;
+  border: 1px solid #dbe2d1;
+  border-radius: 8px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.facial-scan-avatar {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  padding: 3px;
+  background: #e1e9d8;
+  border: 2px solid #5a7b4f;
+  box-shadow: 0 4px 14px rgba(24, 61, 42, 0.12);
+}
+.facial-scan-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.facial-scan-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  background: #235339;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.facial-scan-text {
+  flex: 1;
+}
+.facial-scan-text .eyebrow {
+  font-size: 8.5px;
+  letter-spacing: 1.4px;
+  color: #5c6e52;
+  margin-bottom: 5px;
+}
+.facial-scan-text h3 {
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+  color: #1a2a1f;
+  margin: 0 0 6px 0;
+}
+.facial-scan-text p {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #526348;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .facial-expectation-round {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+}
+
 .privacy-page {
   max-width: 800px;
   margin: 75px auto;
