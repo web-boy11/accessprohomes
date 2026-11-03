@@ -157,11 +157,18 @@ export default async function (req: Request) {
       const cleanName = name.replace(/[^a-zA-Z0-9]/g, '_')
       const fileName = `${cleanName}_ID_${randomUUID().slice(0, 8)}.${png ? 'png' : 'jpg'}`
 
-      // 1. Save locally as reliable backup
-      const uploadDir = path.resolve(process.cwd(), 'uploads', id)
-      await fs.mkdir(uploadDir, { recursive: true })
-      await fs.writeFile(path.join(uploadDir, fileName), fileBuffer)
-      documentKey = `uploads/${id}/${fileName}`
+      // 1. Save backup (use /tmp on serverless environments like Netlify where root is read-only)
+      try {
+        const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME)
+        const uploadDir = isServerless
+          ? path.join('/tmp', 'uploads', id)
+          : path.resolve(process.cwd(), 'uploads', id)
+        await fs.mkdir(uploadDir, { recursive: true })
+        await fs.writeFile(path.join(uploadDir, fileName), fileBuffer)
+        documentKey = `uploads/${id}/${fileName}`
+      } catch {
+        documentKey = `uploads/${id}/${fileName}`
+      }
 
       // 2. Upload to Google Drive if Drive storage is configured
       try {
