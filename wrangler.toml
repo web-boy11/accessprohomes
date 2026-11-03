@@ -5,4 +5,5 @@ compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = "./dist/client"
-not_found_handling = "single-page-application"
+binding = "ASSETS"
+not_found_handling = "none"

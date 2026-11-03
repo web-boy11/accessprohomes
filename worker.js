@@ -1,3 +1,5 @@
+import serverEntrypoint from './dist/server/server.js';
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -94,9 +96,17 @@ export default {
       }
     }
 
-    // Serve static frontend assets from dist/client
+    // Serve static assets first (CSS, JS, images, favicons)
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const assetRes = await env.ASSETS.fetch(request);
+      if (assetRes.status !== 404) {
+        return assetRes;
+      }
+    }
+
+    // SSR render with TanStack Start
+    if (typeof serverEntrypoint?.fetch === 'function') {
+      return serverEntrypoint.fetch(request);
     }
 
     return new Response('Not found', { status: 404 });
